@@ -1,0 +1,33 @@
+SASL - system application support library
+
+Typically one module for both OTP hooks and client call handlers. Requires exporting all those functions which is kind of ugly. One way to address this is to use two export calls for easy documentation of which are OTP and which are client calls.
+
+-behavior compile flag tells compiler to check module to confirm that all the proper interfaces have been implemented.
+
+Important to note that "args" of start_link is /not/ decomposed when Mod:init is called.
+
+Second arg of stop tuple defines program exit status. "normal" is regular
+
+Have to manually set up trap exit if Mod:terminate should be called on crash
+
+  process_flag(trap_exit, true)
+
+  => results in:
+
+  Mod:terminate(Reason, LoopData)
+
+All messages which aren't recognized by gen_server:cast or :call get directed to Mod:handle_info(Message, LoopData)
+
+When using {global,Name} in gen_server:start_link, it's registered across the cluster. Uses the global module in kernel lib to register.  Must use gen_server:call({global,Name}, Msg) for global calls, but {local,Name} will fail, only Name is correct for local servers. Same name can exist locally and globablly.
+
+Can use gen_server:start() to start a process but not link to a supervisor. Useful for attaching to a supervisor other than the current process. This is because there is an assumption that a supervisor started the process.
+
+register module is "local", global is of course "global"
+
+
+Questions
+---------
+
+* OTP not good for very large messages? Related to statement that OTP is geared to msg processing time, not sending and receving time
+
+* What happens to incoming gen_server messages while a handle_cast is blocking?
