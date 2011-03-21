@@ -3,8 +3,7 @@
 
 -include("../include/backend.hrl").
 
-%-export([empty/0]).
--compile(export_all).
+-export([empty/0, insert/2, db_to_list/1, db_size/1, lookup/2, lookup_all/3, update/2]).
 
 % For now just using a simple list.
 % TODO: Change from list to a proper backend.
@@ -50,7 +49,7 @@ lookup_all(AccountField, Key, [Head|DBRef]) ->
 
 update(_Account, []) ->
   [];
-update(Account, [Head,DBRef]) ->
+update(Account, [Head|DBRef]) ->
   case Head#account.no =:= Account#account.no of
     true -> [Account | DBRef];
     false -> [Head | update(Account,DBRef)]
