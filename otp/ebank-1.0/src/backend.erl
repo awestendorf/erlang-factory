@@ -1,5 +1,7 @@
 -module(backend).
+-behavior(gen_server).
 -include("../include/backend.hrl").
+
 -export([start/0, start_link/0, stop/0, init/0,
 	 account/1, pin_valid/2, change_pin/3,
 	 balance/2, transactions/2,
@@ -15,48 +17,98 @@
 	 {4, 5000, "1234", "Henry Nystrom"}
 	]).
 
--record(state, {accounts}).
+%start() -> spawn(?MODULE, init, []).
+start() ->
+  start_link().
 
-start() -> spawn(?MODULE, init, []).
+start_link() -> 
+  gen_server:start_link({local,backend}, ?MODULE, [], []).
 
-start_link() -> {ok, spawn_link(?MODULE, init, [])}.
-
-
-stop() -> ?MODULE ! stop.
-
-account(Account) -> call({account, Account}).
-
-pin_valid(AccountNo, Input) -> call({pin_valid, AccountNo, Input}).
-
-change_pin(User, OldPin, NewPin) -> call({change_pin, User, OldPin, NewPin}).
-
-
-withdraw(AccountNo, Pin, Ammount) -> call({withdraw, AccountNo, Pin, Ammount}).
-
-
-transfer(Ammount, From, To, Pin) -> call({transfer, From, To, Pin, Ammount}).
-
-
-balance(AccountNo, Pin) -> call({balance, AccountNo, Pin}).
-
-transactions(AccountNo, Pin) -> call({transactions, AccountNo, Pin}).
-
-call(X) ->
-  ?MODULE ! {X, self()},
-  receive {?MODULE, reply, R} -> R end.
-
-reply(To, X) -> To ! {?MODULE, reply, X}.
-
-init() ->
+% Callback from gen_server start
+init(_Args) ->
   process_flag(trap_exit, true),
-  register(?MODULE, self()),
+  % Not needed because this is gen server? register(?MODULE, self()),
   Accounts =
     lists:foldl(fun({No, Balance, Pin, Name}, DB) ->
 		    ?DB:insert(new_account(No, Balance, Pin, Name), DB)
 		end,
 		?DB:empty(),
 		?ACCOUNTS),
-  loop(#state{accounts = Accounts}).
+  {ok, Accounts}.
+
+stop() ->
+  gen_server:cast(backend, stop).
+
+account(Account) -> 
+  gen_server:call(backend, {account, Account}).
+
+pin_valid(AccountNo, Input) -> 
+  gen_server:call(backend, {pin_valid, AccountNo, Input}).
+
+change_pin(User, OldPin, NewPin) -> 
+  gen_server:call(backend, {change_pin, User, OldPin, NewPin}).
+
+withdraw(AccountNo, Pin, Ammount) -> 
+  gen_server:call(backend, {withdraw, AccountNo, Pin, Ammount}).
+
+transfer(Ammount, From, To, Pin) -> 
+  gen_server:call(backend, {transfer, From, To, Pin, Ammount}).
+
+balance(AccountNo, Pin) -> 
+  gen_server:call(backend, {balance, AccountNo, Pin}).
+
+transactions(AccountNo, Pin) -> 
+  gen_server:call(backend, {transactions, AccountNo, Pin}).
+
+% Handle stop call asynchronously
+handle_cast(stop, State) ->
+  {stop, normal, State}.
+
+% Synchronous calls
+
+% Search for a specific account
+handle_call({account,Account), _From, Accounts) ->
+	case Account of
+	  all ->
+	    {reply, lists:map(fun(#account{no = No, name = Name}) -> {No, Name} end,
+		      ?DB:db_to_list(State#state.accounts)), Accounts};
+	  Name when list(Name) -> {reply, find_account(Name, State), Accounts};
+	  No when integer(No) -> {reply, [find_account(No, State)], Accounts}
+	end;
+
+handle_call({pin_valid, AccountNo, Pin}, _From, Accounts) ->
+  {reply, find_account(AccountNo,Pin), Accounts};
+
+handle_call({change_ping, User, OldPin, NewPin}, _From, Accounts) ->
+  case do_change_pin(User, OldPin, NewPin, Accounts) of
+    {error, ErrMsg} -> {reply, {error, ErrMsg}, Accounts};
+    {ok, NewAccounts} -> {reply, ok, NewAccounts}
+  end;
+
+handle_call({withdraw, AccountNo, Pin, Ammount}, _From, Accounts) ->
+  case do_withdraw(AccountNo, Pin, Ammount, Accounts) of
+    {error, ErrMsg} -> {reply, {error, ErrMsg}, Accounts};
+    {ok, NewAccounts} -> {reply, ok, NewAccounts}
+  end;
+
+handle_call({transfer, From, To, Pin, Ammount}, _From, Accounts) ->
+  case do_transfer(From, To, Pin, Ammount, Accounts) of
+    {error, ErrMsg} -> {reply, {error,ErrMsg}, Accounts};
+    {ok, NewAccounts} -> {reply, ok, NewAccounts}
+  end;
+  
+handle_call({balance, AccountNo, Pin}, _From, Accounts) ->
+  case do_balance(AccountNo, Pin, Accounts) of
+    {error, ErrMsg} -> {reply, {error,ErrorMsg}, Accounts};
+    balance -> {reply, balance, Accounts}
+  end;
+
+handle_call({transactions, AccountNo, Pin}) ->
+  case do_transactions(AccountNo, Pin, Accounts) of
+    {error,ErrorMsg} -> {reply, {error,ErrorMsg}, Accounts};
+    transactions -> {reply, transactions, Accounts}
+  end.
+
 
 loop(State) ->
   receive 
