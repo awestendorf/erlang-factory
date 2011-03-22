@@ -123,7 +123,7 @@ handle_call({balance, AccountNo, Pin}, _From, State) ->
 handle_call({transactions, AccountNo, Pin}, _From, State) ->
   case do_transactions(AccountNo, Pin, State) of
     {error,ErrMsg} -> {reply, {error,ErrMsg}, State};
-    transactions -> {reply, transactions, State}
+    Transactions -> {reply, Transactions, State}
   end;
 
 handle_call({new_account, [Balance, Pin, Name]}, _From, State) ->

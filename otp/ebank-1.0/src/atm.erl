@@ -18,12 +18,9 @@ start(Name) ->
 start_link(Name) -> 
   gen_fsm:start_link({local,Name}, ?MODULE, Name, []).
 
-%send_event(Event, Name) -> name(Name) ! Event.
-
 % For now send synchronous for all states
 stop(Name) -> 
   gen_fsm:sync_send_all_state_event(Name, stop).
-  %send_event(stop, Name).
 
 % Handle all sync events for stop
 handle_sync_event(stop, _From, State, LoopData) ->
@@ -35,24 +32,12 @@ terminate(Reason, StateName, State) ->
 % Callback from hardware, will queue through fsm. E is the event name, Name is
 % the same name passed into start() and atm_hw:start().
 event(E, Name) -> 
-  io:format("Sending event ~p~n", [E]),
   gen_fsm:send_event(Name, E).
-  %send_event(E, Name).
 
 card_inserted(Account, Name) -> 
   gen_fsm:send_event(Name, {card_inserted, Account}).
-  %send_event({card_inserted, Account}, Name).
 
-
-%init(Name) ->
-% register(name(Name), self()),
-%  idle(#state{name = Name}).
-
-% TODO: abstract the initialization message
 init(Name) ->
-  %atm_hw:display("\n\n   Please insert your awesome new card with moneys", Name),
-  %{next_state, wait_for_card, "foooooooo"}.
-  %{ok, wait_for_card, #state{name = Name}}.
   {_,_,State} = cancel( #state{name=Name} ),
   {ok, wait_for_card, State}.
 
@@ -61,8 +46,10 @@ init(Name) ->
 %%
 wait_for_card({card_inserted, AccountNumber}, State) ->
   atm_hw:display("\n\n   Please type your PIN code", State#state.name),
-  {next_state, wait_for_pin, State#state{accountNo=AccountNumber} }.
+  {next_state, wait_for_pin, State#state{accountNo=AccountNumber} };
 
+wait_for_card(_Ignored, State) ->
+  {next_state, wait_for_card, State}.
 
 %%
 %% Card inserted, wait for the pin
@@ -167,8 +154,6 @@ clear(StateName, State) ->
 % Cancels the current action and returns the wait_for_card state
 % TODO: what should the account number be reset to?
 cancel(State) ->
-  %atm_hw:display("cancel: Cancel button pressed\n", Name),
-  %atm_hw:display("\n\n   Please insert your awesome new card with moneys", Name),
   atm_hw:eject(State#state.name),
   {next_state, wait_for_card, State#state{input=[], accountNo=0}}.
 
@@ -198,5 +183,3 @@ mini_statement(#state{accountNo = No, pin = Pin}) ->
 select10([], Acc, _) -> Acc;
 select10(_, Acc, 0) -> Acc;
 select10([H | T], Acc, N) -> select10(T, [H | Acc], N - 1).
-
-%name(Name) -> list_to_atom("atm_" ++ atom_to_list(Name)).
