@@ -11,6 +11,8 @@
 
 -record(state, {name, accountNo, input = [], pin}).
 
+-define(TIMEOUT, 10000).
+
 
 start(Name) -> 
   start_link(Name).
@@ -46,7 +48,7 @@ init(Name) ->
 %%
 wait_for_card({card_inserted, AccountNumber}, State) ->
   atm_hw:display("\n\n   Please type your PIN code", State#state.name),
-  {next_state, wait_for_pin, State#state{accountNo=AccountNumber} };
+  {next_state, wait_for_pin, State#state{accountNo=AccountNumber}, ?TIMEOUT };
 
 wait_for_card(_Ignored, State) ->
   {next_state, wait_for_card, State}.
@@ -58,7 +60,7 @@ wait_for_card(_Ignored, State) ->
 wait_for_pin({digit, Digit}, State) ->
   Digits = State#state.input ++ Digit,
   atm_hw:display(Digits, State#state.name),
-  {next_state, wait_for_pin, State#state{input=Digits}};
+  {next_state, wait_for_pin, State#state{input=Digits}, ?TIMEOUT};
 
 wait_for_pin(cancel, State) ->
   cancel(State);
@@ -70,11 +72,14 @@ wait_for_pin(enter, State) ->
   case backend:pin_valid(State#state.accountNo, State#state.input) of
     true -> 
       atm_hw:display("\n\n   Please make your selection", State#state.name),
-      {next_state, wait_for_selection, State#state{pin=State#state.input, input=[]} };
+      {next_state, wait_for_selection, State#state{pin=State#state.input, input=[]}, ?TIMEOUT };
     false ->
       atm_hw:display("\n\n   PIN code incorrect!\n    Please try again."),
-      {next_state, wait_for_pin, State#state{input=[]}}
+      {next_state, wait_for_pin, State#state{input=[]}, ?TIMEOUT}
   end;
+
+wait_for_pin(timeout, State) ->
+  cancel(State);
 
 % Trap everything else and ignore
 wait_for_pin(_Ignored, State) ->
@@ -83,7 +88,6 @@ wait_for_pin(_Ignored, State) ->
 %%
 %% Wait for a selection
 %%
-
 wait_for_selection(clear, State) ->
   clear(wait_for_selection, State);
 
@@ -94,17 +98,20 @@ wait_for_selection({selection,select1}, State) ->
   atm_hw:high_light(select1, State#state.name),
   atm_hw:display("\n\n    How much would you like\n    to withdraw?",
 		     State#state.name),
-  {next_state, withdraw, State};
+  {next_state, withdraw, State, ?TIMEOUT};
 
 wait_for_selection({selection,select2}, State) ->
   atm_hw:high_light(select2, State#state.name),
   atm_hw:display(balance(State), State#state.name),
-  {next_state, wait_for_selection, State};
+  {next_state, wait_for_selection, State, ?TIMEOUT};
 
 wait_for_selection({selection,select3}, State) ->
   atm_hw:high_light(select3, State#state.name),
   atm_hw:display(mini_statement(State), State#state.name),
-  {next_state, wait_for_selection, State};
+  {next_state, wait_for_selection, State, ?TIMEOUT};
+
+wait_for_selection(timeout, State) ->
+  cancel(State);
 
 % Ignore everthing else
 wait_for_selection(_Ignored, State) ->
@@ -122,7 +129,7 @@ withdraw(cancel, State) ->
 withdraw({digit, Digit}, State) ->
   Digits = State#state.input ++ Digit,
   atm_hw:display(Digits, State#state.name),
-  {next_state, withdraw, State#state{input=Digits}};
+  {next_state, withdraw, State#state{input=Digits}, ?TIMEOUT};
 
 withdraw(enter, State) ->
   Amount = list_to_integer(State#state.input),
@@ -142,13 +149,16 @@ withdraw(enter, State) ->
       {next_state, wait_for_card, #state{name=State#state.name}}
   end;
 
+withdraw(timeout, State) ->
+  cancel(State);
+
 % Ignore everything else
 withdraw(_Ignored, State) ->
   {next_state, withdraw, State}.
 
 clear(StateName, State) ->
   atm_hw:display("", State#state.name),
-  {next_state, StateName, State#state{input=[]}}.
+  {next_state, StateName, State#state{input=[]}, ?TIMEOUT}.
   %StateName(State#state{input = []}).
 
 % Cancels the current action and returns the wait_for_card state
