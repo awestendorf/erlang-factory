@@ -30,4 +30,7 @@ Questions
 
 * OTP not good for very large messages? Related to statement that OTP is geared to msg processing time, not sending and receving time
 
+ - Issue is in the overhead per-message in tracking safety of message snd and rcv when using call. Can limit overhead with fully asynchronous cast but then you lose safety.
+
 * What happens to incoming gen_server messages while a handle_cast is blocking?
+  There's a method to look at process info, and that can show the size of the message input queue
