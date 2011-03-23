@@ -18,26 +18,27 @@ start(Name) ->
   start_link(Name).
 
 start_link(Name) -> 
-  gen_fsm:start_link({local,Name}, ?MODULE, Name, []).
+  gen_fsm:start_link({local,name(Name)}, ?MODULE, Name, []).
 
 % For now send synchronous for all states
 stop(Name) -> 
-  gen_fsm:sync_send_all_state_event(Name, stop).
+  gen_fsm:sync_send_all_state_event(name(Name), stop).
 
 % Handle all sync events for stop
 handle_sync_event(stop, _From, State, LoopData) ->
   {stop, normal, State, LoopData}.
 
 terminate(Reason, StateName, State) ->
-  io:format("Terminated at ~p with state ~p due to ~p~n", [StateName, State, Reason]).
+  io:format("Terminated at ~p with state ~p due to ~p~n", [StateName, State, Reason]),
+  ok.
 
 % Callback from hardware, will queue through fsm. E is the event name, Name is
 % the same name passed into start() and atm_hw:start().
 event(E, Name) -> 
-  gen_fsm:send_event(Name, E).
+  gen_fsm:send_event(name(Name), E).
 
 card_inserted(Account, Name) -> 
-  gen_fsm:send_event(Name, {card_inserted, Account}).
+  gen_fsm:send_event(name(Name), {card_inserted, Account}).
 
 init(Name) ->
   {_,_,State} = cancel( #state{name=Name} ),
@@ -47,8 +48,17 @@ init(Name) ->
 %%  Idle state, wait for a card
 %%
 wait_for_card({card_inserted, AccountNumber}, State) ->
-  atm_hw:display("\n\n   Please type your PIN code", State#state.name),
-  {next_state, wait_for_pin, State#state{accountNo=AccountNumber}, ?TIMEOUT };
+  case backend:blocked(AccountNumber) of
+    true -> 
+      % Technically, we should eat the card and call the cops, but this works too
+      alarm_handler:set_alarm({account_stolen, {State#state.name,AccountNumber}}),
+      atm_hw:display("\n\n   ZOMG YOU STOLE IT!", State#state.name),
+      timer:sleep(2000),
+      cancel(State);
+    false ->
+      atm_hw:display("\n\n   Please type your PIN code", State#state.name),
+      {next_state, wait_for_pin, State#state{accountNo=AccountNumber}, ?TIMEOUT }
+  end;
 
 wait_for_card(_Ignored, State) ->
   {next_state, wait_for_card, State}.
@@ -138,14 +148,14 @@ withdraw(enter, State) ->
       atm_hw:display("\n\n    Take the money and run.", State#state.name),
       timer:sleep(3500),
       atm_hw:high_light(off, State#state.name),
-      atm_hw:eject(State#state.name),
+      eject(State),
       {next_state, wait_for_card, #state{name=State#state.name}};
     {error, Reason} ->
 	    Msg = io_lib:format("\nCould not withdraw money!\n~p.", [Reason]),
 	    atm_hw:display(Msg, State#state.name),
       timer:sleep(3500),
       atm_hw:high_light(off, State#state.name),
-      atm_hw:eject(State#state.name),
+      eject(State),
       {next_state, wait_for_card, #state{name=State#state.name}}
   end;
 
@@ -161,10 +171,15 @@ clear(StateName, State) ->
   {next_state, StateName, State#state{input=[]}, ?TIMEOUT}.
   %StateName(State#state{input = []}).
 
+eject(State) ->
+  atm_hw:eject(State#state.name),
+  alarm_handler:clear_alarm(account_stolen),
+  ok.
+
 % Cancels the current action and returns the wait_for_card state
 % TODO: what should the account number be reset to?
 cancel(State) ->
-  atm_hw:eject(State#state.name),
+  eject(State),
   {next_state, wait_for_card, State#state{input=[], accountNo=0}}.
 
 balance(#state{accountNo = No, pin = Pin}) ->
@@ -193,3 +208,6 @@ mini_statement(#state{accountNo = No, pin = Pin}) ->
 select10([], Acc, _) -> Acc;
 select10(_, Acc, 0) -> Acc;
 select10([H | T], Acc, N) -> select10(T, [H | Acc], N - 1).
+
+% Create a local process name
+name(Name) -> list_to_atom("atm_sw_" ++ atom_to_list(Name)).

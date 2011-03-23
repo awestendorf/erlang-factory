@@ -7,7 +7,8 @@
 	 balance/2, transactions/2,
 	 withdraw/3,
 	 transfer/4,
-   block/1
+   block/1,
+   blocked/1
 	]).
 
 -export([handle_call/3, handle_cast/2, terminate/2]).
@@ -46,8 +47,8 @@ init(_Args) ->
 stop() ->
   gen_server:cast(backend, stop).
 
-terminate(Reason, State) ->
-  io:format("TERMINATING ~p~n", [Reason]),
+terminate(Reason, _State) ->
+  io:format("Terminating backend ~p~n", [Reason]),
   ok.
 
 account(Account) -> 
@@ -73,6 +74,9 @@ transactions(AccountNo, Pin) ->
 
 block(AccountNo) ->
   gen_server:call(backend, {block, AccountNo}).
+
+blocked(AccountNo) ->
+  gen_server:call(backend, {blocked, AccountNo}).
 
 % Handle stop call asynchronously
 handle_cast(stop, State) ->
@@ -139,7 +143,10 @@ handle_call({block, AccountNo}, _From, State) ->
   case lists:member(AccountNo, State#state.blocked) of
     false -> {reply, ok, State#state{blocked = [AccountNo|State#state.blocked]} };
     _ -> {reply, ok, State}
-  end.
+  end;
+
+handle_call({blocked, AccountNo}, _From, State) ->
+  {reply, lists:member(AccountNo, State#state.blocked), State}.
 
 new_account(No, Balance, Pin, Name) ->
   #account{no = No, balance = Balance, pin = Pin, name = Name}.
