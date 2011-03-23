@@ -27,7 +27,7 @@
 %%%%%
 % Interface
 %
--export([start_link/0, stop/0]).
+-export([start_link/0, start_link/1, stop/0]).
 
 %%%%%
 % Gen supervisor part
@@ -49,7 +49,11 @@
 %%%%%
 %% @spec () -> 
 %
-start_link() -> supervisor:start_link({local, ?MODULE}, ?MODULE, no_args).
+start_link() -> 
+  supervisor:start_link({local, ?MODULE}, ?MODULE, [default]).
+
+start_link(Name) ->
+  supervisor:start_link({local, ?MODULE}, ?MODULE, [Name]).
 
 %%%%%
 %% @spec () -> 
@@ -65,20 +69,8 @@ stop() -> exit(whereis(?MODULE), shutdown).
 %%%%%
 %% @spec () -> 
 %
-init(no_args) ->
-  {ok, {{rest_for_one, 5, 2000},
-	[child(backend, none), child(atm, atm1), child(atm_hw, atm1)]}}.
-  
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% INTERNAL FUNCTIONS
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%%%%
-%% @spec () -> 
-%
-child(Module, none) ->
-  {Module, {Module, start_link, []}, permanent, brutal_kill, worker, [Module]};
-child(Module, Name) ->
-  {Module, {Module, start_link, [Name]}, permanent, brutal_kill, worker, [Module]}.
-
+init([Name]) ->
+  {ok, {{rest_for_one, 5, 2000},[
+    {backend, {backend, start_link, []}, permanent, brutal_kill, worker, [backend]},
+    {Name, {atm_sups, start_link, [Name]}, permanent, brutal_kill, worker, [atm_sups]}
+  ]}}.

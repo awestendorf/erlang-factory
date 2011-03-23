@@ -27,7 +27,7 @@
 
 %start() -> spawn(?MODULE, init, []).
 start() ->
-  start_link().
+  gen_server:start({local,backend}, ?MODULE, [], []).
 
 start_link() -> 
   gen_server:start_link({local,backend}, ?MODULE, [], []).
