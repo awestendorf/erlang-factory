@@ -24,6 +24,26 @@ Can use gen_server:start() to start a process but not link to a supervisor. Usef
 
 register module is "local", global is of course "global"
 
+Don't use slashes and dashes in application names. Slashes confuse directory traversal and dashes confuse version parsing. Also, periods confuse erlang because the new packaging system tries to turn that into a nested directory lookup. That might work, but OTP doesn't understand it so it's generally a bad idea.
+
+Module space is flat! Module names must be unique across all applications *per node*.
+
+The "-" options to `erl` are interpreted by Erlang, the "+" options configure beam.
+
+See release_handler:which_releases() and other methods.
+
+Look into systools for how to make script and boot files. Note systools:make_tar for a complete package generation. Make sure to run erlang in embedded mode to ensure that you have all your requirements noted, as make_tar will only include those things, and thus you might be missing important dependencies. systools:make_script() will generate the boot and script files.
+
+Check into `rebar` for simplified tools on release management.
+
+Release file "foo.rel":
+
+  {release, 
+    {"foo", "1.0"},   % release name and version
+    {"erts", "5.5"},  % version of erlang runtime system (aka beam)
+    [{kernel, "5.3"}, {"foo", "1.0"}]     % applications and versions 
+  }.
+
 
 Questions
 ---------
@@ -34,3 +54,39 @@ Questions
 
 * What happens to incoming gen_server messages while a handle_cast is blocking?
   There's a method to look at process info, and that can show the size of the message input queue
+
+
+Writing a language on the erlang vm
+------------------------------------
+
+See Leex and Yecc for parser and scanner. They generate erlang modules.
+
+
+Mnesia
+------
+
+Use DETS and ETS when you need dictionary lookup
+Don't store plain text or binary data
+Not good for hard real time requirements
+
+To begin, create a schema that will reside on disk
+Create tables, storing persistent tables on disk for restarts
+Each table stores a single record type
+Table name is by default name of the record
+Each record is an object, each object has an OID {TableName, Key}
+
+Have to manage relations with additional tables
+
+mnesia:create_schema(NodeList) to initialize schema
+Called once, before mnesia start
+All distributed nodes must be started and connected, mnesia not running on them and no old schemas around
+application:start(mnesia) or mnesia:start(). Will load scheme if exists, else create volatile one
+
+mnesia:transaction(Fun) will run a read/write/del in a transaction, returns last value of fun.
+Returns {atomic,Value} unless mnesia:abort is called, which returns {aborted,Reason}
+Committing transaction ensures all nodes are updated
+
+No duplicate checks, write on non-bag table deletes existing value
+
+Look into mnesia:set_master_node for how to fix partitioned networks
+See tv module for viewing mnesia and ETS tables
