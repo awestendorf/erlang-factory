@@ -1,0 +1,14 @@
+Joe Armstrong
+-------------
+
+"Constraint Logic Programming"
+
+Zapbar
+  * erlang -> llvm
+  * llvm optimizer, `opt`
+  * gecode (constraint logic programming)
+
+
+llc turns llvm into native assembly
+
+Boustrophodonic
