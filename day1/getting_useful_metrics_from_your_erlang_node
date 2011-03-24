@@ -1,0 +1,30 @@
+Justin Kirby
+============
+Works for Voalte, real-time messages for nurses
+
+https://github.com/justinkirby/emetric
+
+inspired by rebar and eper
+
+wants it to be used by non-developers and non-erlang users (i.e. sys admins)
+wants to be part of CI
+
+pluggable
+ * add new data sources
+ * add new output formats (e.g. munin)
+
+
+
+tsung needs maxusers on <client> greater than man number of users altogether
+example tsung config uses all custom stanzas, we'll have to do the same it seems
+
+plotr is a tool to graph data for fun and profit. He ran a python script, but the web
+says plotr is javascript. Figure that out.
+
+Uses code injection to test so there's some concern about monitoring. emetric
+may not be correct out of the box, but could serve as a template for writing
+a module to output ejabberd data to munin
+
+Findings:
+ * do not store mnesia tables in memory, but disc_only_copies is slow
+ * ejabberd global shared rosters are bad
