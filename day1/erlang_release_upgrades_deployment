@@ -1,0 +1,28 @@
+Joe Williams
+------------
+Works at fast_ip
+Contributer/maintaner of rebar
+
+Deployment
+==========
+
+Standardize directories, configs, scripts
+
+Fat tarballs for self-contained installation, all the files needed and dependencies may live outside
+
+Chef
+  deploy via erlang_apps
+  Simply chef API for deploying erlang releases
+  https://github.com/fastip/fastip_cookbooks
+  Joe wrote support for erl_call
+
+
+Continuous Integration
+  * publish tarballs to CI system
+  * rebar can publish code upgrades
+
+
+Hot Upgrades
+  * generate appup files via rebar
+  * generate upgrade tarballs via rebar
+  * all of this can be done via CI
