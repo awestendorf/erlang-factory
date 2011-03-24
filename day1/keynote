@@ -1,0 +1,101 @@
+Francesco intro
+---------------
+
+Lots of growth in Erlang conferences
+Lots of new patches to erlang/otp on github
+
+Airlang wireless: ef2011/sfo2011
+
+erlounge:
+  Look into real-time applications with UC Engine
+  Tour of Basho's github repos
+  How Nokia uses Disco 
+
+
+
+Kostis Sagonas
+--------------
+"Cool Tools for Modern Erlang Program Development"
+
+Background in logic programming
+
+Dialyzer
+========
+Static analysis to identify discrepancies
+ * type errors
+ * api violations
+ * unreachable code
+ * opacity violations
+ * concurrency errors and race conditions (-Wrace_conditions)
+
+Experimental support for message passing problems and deadlocks
+Need to recompile with +debug_info
+  erlc +debug_info -o ebin src/*.erl
+  dialyzer ebin
+
+use --add_to_plt for apps to include in the test suite
+
+See http://www.softlab.ntua.gr/dialyzer/ for continuous integration
+
+
+Expose type information for fun and profit
+  * add explicit guards
+    * may have small runtime overhead
+  * add type delarations and function specs
+    * can be used by dialyzer
+
+The -spec declarations are turned into edoc @spec annotations
+
+-type filename() :: string().
+-spec foo(FileName :: filename()) -> [{ok, Success}, {error, Reason}].
+
+Can also do the above and refer to a type declared elsewhere
+
+dialyzer -Wunderspecs tells us if -spec are underspecified
+Add -spec for all exported functions
+
+
+TypEr
+=====
+A type annotator
+Displays function specs which already exist or are inferred by dializer
+
+typer --show-exported foo.erl
+
+Requires dialyzer to have generated plt file
+
+Can add types to record fields
+
+-record( foo, {
+  bar :: string() %% a string
+}).
+
+
+Tidier
+======
+Automatic refactoring tool
+
+All transformations are conservative
+ * use newer constructs
+ * smaller code
+ * redundancy elimination
+ * performance improvement
+
+Tidier has a website where you can upload code and get the results
+Not available as a local tool, only the web. Has licensing for closed source projects
+tidier.softlab.ntua.gr
+
+Tidier is awesome
+
+PropEr
+======
+Inspired by QuickCheck
+Property-based testing tool
+https://github.com/manopapad
+
+CED
+===
+Concurrency Error Detector
+
+detects some concurrency errors
+Available on github https://github.com/mariachris/CED
