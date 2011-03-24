@@ -1,0 +1,49 @@
+Tino Breddin
+------------
+Assistant engineer at Erlang Solutions
+Worked with a lot of ruby and python before erlang
+
+Release Cheat Sheet:
+  * 3 month cycle
+  * 1 major release per year
+  * R14B02 stands for R(major release)(release maturity)(patch level)
+    - A is for alpha, B is production
+  * Releases schedule by OTP group
+  
+
+Source code at https://github.com/erlang/otp
+Patches mailing list for code contributions
+
+When developing on the github repo,
+  * pu branch for first commits and "cooking"
+  * dev branch when accepted from pu and goes into pending release
+    - OTP releases come out of this
+
+All patches have to be announced on patches mailing list
+Maintainer(s) at Ericsonn decide how to move patches into pu and dev branch
+
+Ericsson maintains an internal branch for what they can't release
+
+Contributing:
+  * When wanting to submit a patch, you *MUST* reduce to one commit!
+  * Ensure test coverage
+  * Push change to your github fork
+  * Email erlang-patches@erlang.org
+
+Erlang Package Management
+  `epm install mochiweb`
+  `rebar get-deps` %% specifically for dependencies
+  see also faxien, cean, agner
+  ** basically, no consistent package management **
+
+Erlang VMs are beam and erjang (HiPE too I suppose)
+
+Interfacing with Erlang through NIFs, Port Drivers, Ports
+
+
+Coming Soon in Erlang
+  * Continuous Integration for erlang/otp in public domain
+  * CI for OSS components as well (mochiweb, couchdb, etc)
+  * 
+
+Erlang CI is called moebius
