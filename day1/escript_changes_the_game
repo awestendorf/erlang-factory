@@ -1,0 +1,55 @@
+Geoff Cant
+==========
+
+#!/usr/bin/env escript
+main(Args) ->
+  io:format("foo"),
+  erlang:halt(0).  %% implied when main() returns
+
+https://github.com/archaelus/egc_examples
+
+rapid boot sequence, your stuff runs as second process, *before* kernel and error logger
+interprets/compiles the escript text, similar to shell but acts more as a module including (?MODULE works)
+Args is list of strings
+There's a "getopt" library out there https://github.com/jcomellas/getopt
+
+Compiled mode is faster than interpreted, use all standard options including HiPE
+Add "-mode(compile)" to do it
+  https://github.com/archaelus/egc_examples/blob/master/slide1.1 and slide1.2
+
+Escript can be interpreted script, compiled module or a zip file!
+
+escript:create/2 for creating fancy scripts
+%%! to supply beam arguments after shbang
+
+`escript -s` for syntax check
+
+improves unix integration
+ * init scripts
+ * control scripts
+ * health checks (nagios)
+ * system stats (munin)
+
+TODO: write a rabbitmq escript
+TODO: learn about erl_call which can be used to interact with a running system
+
+As soon as escript starts you have a full erlang environment that you can query
+
+TODO: learn about `erl -remsh`
+TODO: try rescriptmsh on the ebank demo
+
+You can hot upgrade code on an escript node
+Can't fork-and-detach from within an escript because the node has already booted
+escript can be used for init scripts, but it's not perfect
+
+os:cmd for forking fun and profit
+
+
+
+
+Questions
+---------
+
+What's the right way to block main() until we're done?
+
+How does one upgrade code, OTP or otherwise?
