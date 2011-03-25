@@ -60,6 +60,7 @@ Writing a language on the erlang vm
 ------------------------------------
 
 See Leex and Yecc for parser and scanner. They generate erlang modules.
+http://www.thebitsource.com/wp-content/uploads/2010/11/EF-LA-10-Implementing-languages.pdf
 
 
 Mnesia
