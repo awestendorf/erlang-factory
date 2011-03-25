@@ -1,0 +1,30 @@
+Gene Sher
+---------
+
+See Blue Brain Project
+
+Algorithms
+  * supervised (Old)
+    * backpropagation
+  * unsupervised (The Future)
+    * kohonan map
+    * adaptive resonance theory
+    * Hebbian
+    * Modulated
+    * Evolutionary
+
+Topology and Weight Evolving NN
+  * Population and fitness functions
+  * parametric mutation operators
+  * topological mutation operators
+  * other mutation operators (learning algorithms, activation functions, submodules)
+
+Neurons can be encoded as tuples
+  {neuron, InputPids, OutputPids, State .... }
+
+Supervision trees and OTP to represent neurons
+
+TODO: read about digraphs in erlang
+
+preprints available on arxiv.org
+code coming to github soon (what account? don't know)
