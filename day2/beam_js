@@ -1,0 +1,47 @@
+Yurii Rashkovskii
+-----------------
+
+Goals
+  * enable javascript to use erlang's power
+  * allow erlang to introspect javascript
+
+stack:
+  [beamjs, erlv8, google v8, beam]
+
+beamjs is a set of libs on top of erlv8 which is the interface
+
+erlv8_vm uses 0mq for messaging between NIF and V8. Solves problem of
+blocking while in the NIF call. Is entirely asynchronous.
+
+V8 supports preemption. erlv8_vm supports multiple threads of execution
+V8 is restricted to a single core because of locking primitives. So use messaging
+back to erlang to get SMP and just run business logic in V8
+
+Events
+  * javascript modern art is EventEmitter
+  * erlang is course gen_event
+
+Supports standard messaging primitives by registering mailboxes and callbacks
+
+JUnify is used for basic pattern matching ala erlang
+
+require('erlang').apply(....) for calling erlang code from js. If callback supplied
+as last argument, will be notified when done.
+
+Problems
+  * V8 not thread safe
+  * no lightweight processes
+  * limited preemption
+  * erlv8 not stable, still immature
+
+Future
+  * improve C++ backend and gluing two VMs together
+  * better integration with V8 GC
+  * Strong adherence to CommonJS standards
+
+erlang_js and emonk integrate with spidermonkey
+  * slower
+  * more stable
+  * fewer problems due to V8 architecture
+
+Look into "isolates" branch of V8 for multithreads
