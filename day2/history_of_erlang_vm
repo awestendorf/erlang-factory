@@ -1,0 +1,27 @@
+Robert Virding
+--------------
+Ericson switches programmed in PLEX and Eri-Pascall
+
+1985-1989
+  * basic algebra of Plain Old Telephony Service
+  * Created a reduction machine, automatically last-call optimized and tail-recursive
+  * built off prolog
+  * semantics of the language figured out by 88
+  * First compiler and C emulator in 1989, "JAM"
+
+JAM
+  * 3 data areas: code, atom table, scheduler queue
+  * each process had stack and heap
+    - fast context switching
+    - non-disruptive garbage collection
+  * erlang data structs are tagged pointers on the stack and heap
+
+VEE
+  * early experiment with reference counting on a global heap
+  * fast message passing, but problems with garbage collection and safety
+
+1990
+  * Beam, HiPE, OTP and lots more
+
+BEAM : Bogdan's Erlang Abstract Machine
+  * emulation and native code compilation
