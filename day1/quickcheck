@@ -1,0 +1,19 @@
+John Hughes
+-----------
+
+QuickCheck is for properties on methods which tell it how to generate random data
+
+Things that look like types are in fact test data generators
+
+Download eqcmini from quiviq.com which is a free version of quickcheck
+
+TODO: Write quipcheck for python
+
+Simple properties find bugs
+
+property driven development
+  * effort in setting up properties pays off quickly
+  * no luxury of half-working code
+  * resulting code is very solid
+
+http://en.wikipedia.org/wiki/Category_theory
