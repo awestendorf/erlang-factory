@@ -1,0 +1,11 @@
+Noah Gift
+Michael Vierling
+----------------
+
+Standard OTP supervision trees and gen_servers 
+
+Rabbit classes are amqp_*
+  amqp_connection
+  amqp_channel
+
+Wrote a gen_server to fetch rss and route through rabbit
