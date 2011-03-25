@@ -1,0 +1,78 @@
+Kevin A Smith
+-------------
+
+Voice of Erlang screencasts
+
+Covering CUDA specifically, not OpenCL
+
+2.5 GB/s transfer rates over PCIx16
+
+Papers of note:
+  * PacketShader: GPU accelerated software router
+    - route table in texture memory, stencil code for O(1) lookups
+  * SSLShader
+  * Mars: MapReduce framework
+  * Augmenting Operating Systems with the GPU
+
+Good for:
+  * Sorting (1billion/sec)
+  * Searching
+  * Reductions (avg, median, etc)
+  * Transforms
+  * Min/Max
+  * Prefix scans & sums
+  * Sets
+  * Random numbers (Mersan Twister)
+
+
+CUDA based on C, extends programmable shaders
+Also has runtime framework
+Lots of resources whereas OpenCL is too new to have much out there
+
+write-execute-read loop
+  * data written to the card
+  * code written
+  * then read the result from the card
+
+Overhead of reading and writing can be a bottleneck
+Can choose which card to use in a multiple card system
+CUDA3 uses CPU to pass data between cards, CUDA4 has DMA
+
+nvcc is the compiler which compiles down to assembly
+A CUDA method is called a "kernel"
+If you don't free the memory from a call, the leak stays until reboot
+segfault occurs if you run out memory and it can't alloc
+
+Favorite library is Thrust, will be packaged with CUDA4, is on google code
+  * C++ framework patterned after STL
+  * Less verbose and error prone
+
+TODO: python lib that looks like thrust?
+
+pteracuda
+  * Kevin's experiment to integrate CUDA and Erlang (NIF)
+  * Accelerate slow Erlang operations
+  * Built on CUDA 4 RC1
+
+Concepts
+  * Context (ala javascript)
+  * Buffer, a typed list of data (int, float, strings)
+
+Supports:
+  * sort
+  * contains
+  * intersection
+  * min/max
+
+Erlang faster at sorting random integers until you hit the 50k range
+
+Ocelot is a project for compiling Python directly to PTX which the card can run
+
+
+
+Questions
+----------
+Can the number of threads in the kernel call be dynamic?
+  Yes
+
+Does pteracuda support multiple cards?
