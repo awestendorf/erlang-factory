@@ -1,0 +1,42 @@
+Dan Ingalls
+-----------
+Works at SAP
+
+TODO: Learn about the Caja project at Google
+
+http://labs.oracle.com/projects/lively/
+http://www.lively-kernel.org/
+
+Alex Worth 
+
+They use protoviz and infoviz libraries
+
+LK has webdav support
+
+
+LK uses OMeta to convert smalltalk to javascript
+Uses OData for web service integration http://www.odata.org/
+
+TODO: learn about SproutCore and Backbone JS toolkits
+
+
+
+
+
+Kenneth Lundin
+--------------
+Latest news from OTP group at Ericsson
+
+R14B02
+  * halfword 64bit vm for linux
+  * edoc using -type and -spec
+  * all test suites running with CommonTest
+
+halfword
+  * reduces memory footprint inside process heaps
+  * max GB for all code, heap and stack
+  * can use all memory for ets and shared binaries
+  * only works on linux without hipe
+
+R15B will have line numbers in crash reports
+Also includes line numbers in process_info(Pid,current_location) and p_i(Pid,current_stacktrace)
