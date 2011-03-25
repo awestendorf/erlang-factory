@@ -1,0 +1,48 @@
+Cliff Moon
+----------
+
+Erlang for great networking, Scala for writing database (mutable state, fine-grained locking)
+
+Need 100% uptime because of cost of setting up TLS connections from clients
+  * clients are data collectors and query servers including streaming
+
+Load balancing handled by writing gen_lb
+  * cluster discovery
+  * process shaped endpoints
+  * supports call and cast
+  * pluggable strategies for balancing algorithms
+  * https://github.com/fastip/gen_lb
+
+When compiling Erlang, if java is in the path it creates JInterface
+
+  node = new OtpNode(name, cookie)
+  mbox = node.createMbox("service")
+  mbox.receive()
+  mbox.send(pid, msg)
+
+JInterface writting in 2000 and has a lot of issues
+  * type map usability
+  * performance
+  * no actor API
+  * no monitors
+
+Partitioning problems
+  * link breakages only fire explicitly
+  * no handling for errors
+  * Mbox not closed right in GC
+
+Scalang ("scaling") will be OSSed soon by fastip
+  * Uses Netty networking stack (Java NIO)
+  * Jetlang actors, fiber-based over a threadpool
+  * Native Scala type mappings
+  * Process monitors for gen_server semantics
+  * Real supervision and linkages
+
+Direct transformation of Scala case classes and Erlang records
+  If they don't line up, it looks like a tuple and won't explode
+
+Erlang has been very helpful in debugging a large scale stateful production system
+
+Challenge has been hunting down all the pieces of the Erlang protocol. It's well
+documented, but in many places. Handshake in particular.
+
